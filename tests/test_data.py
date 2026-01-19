@@ -93,7 +93,7 @@ def test_messages(topping, callbacks):
     topping.subscribe(topic, callback_2)
     topping.subscribe(topic, callback_3)
 
-    topping.on_message(topic, json_payload)
+    topping.client.on_message(topic, json_payload)
     assert callbacks[0][0] == 1
     assert callbacks[0][1] == topic
     assert callbacks[0][2] == payload

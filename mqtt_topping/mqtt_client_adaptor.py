@@ -19,4 +19,4 @@ class MqttClientAdaptor(object):
         return
 
     def on_message(self, topic: str, payload: any):
-        self._mqtt_topping.on_message(topic, payload)
+        self._mqtt_topping().on_message(topic, payload)
