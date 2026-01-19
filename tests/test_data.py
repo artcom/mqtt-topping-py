@@ -7,7 +7,7 @@ from tests.client_adaptor import ClientAdaptor
 
 @pytest.fixture(name="topping")
 def topping_fixture():
-    yield MqttTopping(ClientAdaptor(None))
+    yield MqttTopping(ClientAdaptor({}))
 
 
 @pytest.fixture(name="callbacks")
