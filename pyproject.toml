@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mqtt-topping-py"
-version = "0.9.0"
+version = "0.9.1"
 description = "Syntactical sugar on top of the MQTT client cake"
 authors = [
   {name = "Julian Krumow", email = "julian.krumow@artcom.de"},
