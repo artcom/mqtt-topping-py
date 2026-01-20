@@ -7,12 +7,7 @@ from tests.client_adaptor import ClientAdaptor
 
 @pytest.fixture(name="test_topping")
 def topping_fixture():
-    yield MqttTopping(ClientAdaptor({}))
-
-
-@pytest.fixture(name="paho_topping")
-def paho_fixture():
-    yield MqttTopping()
+    yield MqttTopping(ClientAdaptor())
 
 
 @pytest.fixture(name="callbacks")
@@ -57,24 +52,24 @@ def test_subscription(test_topping):
     test_topping.subscribe(topic, callback_3)
     test_topping.subscribe(topic, callback_3)
 
-    assert test_topping.client.subscription == topic
+    assert test_topping.client_adaptor.subscription == topic
     assert len(test_topping.subscriptions[topic]['handlers']) == 3
     assert test_topping.subscriptions[topic]['handlers'][0].callback is callback_1
     assert test_topping.subscriptions[topic]['handlers'][1].callback is callback_2
     assert test_topping.subscriptions[topic]['handlers'][2].callback is callback_3
-    assert test_topping.client.subscription == topic
+    assert test_topping.client_adaptor.subscription == topic
 
     test_topping.unsubscribe(topic, callback_1)
-    assert test_topping.client.subscription == topic
+    assert test_topping.client_adaptor.subscription == topic
     assert test_topping.subscriptions[topic]['handlers'][0].callback is callback_2
     assert test_topping.subscriptions[topic]['handlers'][1].callback is callback_3
 
     test_topping.unsubscribe(topic, callback_2)
-    assert test_topping.client.subscription == topic
+    assert test_topping.client_adaptor.subscription == topic
     assert test_topping.subscriptions[topic]['handlers'][0].callback is callback_3
 
     test_topping.unsubscribe(topic, callback_3)
-    assert test_topping.client.subscription is None
+    assert test_topping.client_adaptor.subscription is None
     assert topic not in test_topping.subscriptions
 
     test_topping.unsubscribe(topic, callback_3)
@@ -98,7 +93,7 @@ def test_messages(test_topping, callbacks):
     test_topping.subscribe(topic, callback_2)
     test_topping.subscribe(topic, callback_3)
 
-    test_topping.client.on_message(topic, json_payload)
+    test_topping.client_adaptor.on_message(topic, json_payload)
     assert callbacks[0][0] == 1
     assert callbacks[0][1] == topic
     assert callbacks[0][2] == payload
@@ -108,10 +103,3 @@ def test_messages(test_topping, callbacks):
     assert callbacks[2][0] == 3
     assert callbacks[2][1] == topic
     assert callbacks[2][2] == payload
-
-
-def test_paho(paho_topping):
-    assert paho_topping is not None
-    paho_topping.subscribe("foo", None)
-    paho_topping.unsubscribe("foo", None)
-    paho_topping.on_message("foo", None)

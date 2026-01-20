@@ -1,7 +1,4 @@
 import json
-import logging
-
-import paho.mqtt.client as paho
 
 from mqtt_topping.subscription_handler import SubscriptionHandler
 from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
@@ -11,15 +8,18 @@ from mqtt_topping.paho_client_adaptor import PahoClientAdaptor
 class MqttTopping:
 
     def __init__(self, client_adaptor: MqttClientAdaptor = None):
-        self._logger = logging.getLogger(self.__class__.__name__)
-
         if client_adaptor is None:
-            client = paho.Client(paho.CallbackAPIVersion.VERSION2)
-            client_adaptor = PahoClientAdaptor(client)
+            client_adaptor = PahoClientAdaptor()
 
-        self.client = client_adaptor
-        self.client.set_mqtt_topping(self)
+        self.client_adaptor = client_adaptor
+        self.client_adaptor.set_mqtt_topping(self)
         self.subscriptions = {}
+
+    def connect(self, host, port):
+        self.client_adaptor.connect(host, port)
+
+    def disconnect(self):
+        self.client_adaptor.disconnect()
 
     def subscribe(self, topic: str, callback, qos=2):
         needs_subscribe = False
@@ -39,7 +39,7 @@ class MqttTopping:
             self.subscriptions[topic]['handlers'].append(handler)
 
         if needs_subscribe:
-            self.client.subscribe(topic, qos=qos)
+            self.client_adaptor.subscribe(topic, qos=qos)
 
     def unsubscribe(self, topic: str, callback: any):
         if topic not in self.subscriptions:
@@ -60,12 +60,12 @@ class MqttTopping:
 
         if len(remaining_handlers) == 0:
             del self.subscriptions[topic]
-            self.client.unsubscribe(topic)
+            self.client_adaptor.unsubscribe(topic)
 
     def publish(self, topic: str, payload: any):
         retain = not self.is_event_or_command(topic)
         payload = json.dumps(payload).encode()
-        self.client.publish(topic, payload, qos=2, retain=retain)
+        self.client_adaptor.publish(topic, payload, qos=2, retain=retain)
 
     def is_event_or_command(self, topic: str) -> bool:
         if topic is None or not isinstance(topic, str):

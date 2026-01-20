@@ -3,8 +3,8 @@ from mqtt_topping import MqttClientAdaptor
 
 class ClientAdaptor(MqttClientAdaptor):
 
-    def __init__(self, client: any):
-        super(ClientAdaptor, self).__init__(client)
+    def __init__(self):
+        super(ClientAdaptor, self).__init__()
         self.subscription = None
         self.published = None
 

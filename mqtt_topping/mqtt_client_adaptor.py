@@ -1,12 +1,17 @@
 import weakref
-import paho.mqtt.client as mqtt
 
 
 class MqttClientAdaptor(object):
 
-    def __init__(self, client: any):
-        self.client = client
+    def __init__(self):
+        self.client = None
         self._mqtt_topping = None
+
+    def connect(self, host, port):
+        return
+
+    def disconnect(self):
+        return
 
     def set_mqtt_topping(self, mqtt_topping):
         self._mqtt_topping = weakref.ref(mqtt_topping)
