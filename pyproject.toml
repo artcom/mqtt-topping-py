@@ -12,7 +12,9 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "paho-mqtt"
+]
 
 [tool.pytest.ini_options]
 minversion = "8.3"

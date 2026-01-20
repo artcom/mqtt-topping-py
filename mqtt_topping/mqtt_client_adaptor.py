@@ -1,9 +1,11 @@
 import weakref
+import paho.mqtt.client as mqtt
 
 
 class MqttClientAdaptor(object):
+
     def __init__(self, client: any):
-        self.td_client = client
+        self.client = client
         self._mqtt_topping = None
 
     def set_mqtt_topping(self, mqtt_topping):

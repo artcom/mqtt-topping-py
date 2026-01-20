@@ -1,15 +1,23 @@
 import json
 import logging
 
-from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
+import paho.mqtt.client as paho
+
 from mqtt_topping.subscription_handler import SubscriptionHandler
+from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
+from mqtt_topping.paho_client_adaptor import PahoClientAdaptor
 
 
 class MqttTopping:
 
-    def __init__(self, client: MqttClientAdaptor):
+    def __init__(self, client_adaptor: MqttClientAdaptor = None):
         self._logger = logging.getLogger(self.__class__.__name__)
-        self.client = client
+
+        if client_adaptor is None:
+            client = paho.Client(paho.CallbackAPIVersion.VERSION2)
+            client_adaptor = PahoClientAdaptor(client)
+
+        self.client = client_adaptor
         self.client.set_mqtt_topping(self)
         self.subscriptions = {}
 
