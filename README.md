@@ -4,7 +4,10 @@ Syntactical sugar on top of the MQTT client cake
 
 ## Features
 
-TODO
+### Enhanced Subscriptions
+
+- Attach multiple callback handlers to the same topic or wildcard
+- Simplified `unsubscribe` (removes specific handler)
 
 ## System requirements
 
@@ -12,7 +15,54 @@ TODO
 
 ## Usage
 
-TODO
+Create an instance of the mqtt topping with a default paho mqtt-client:
+
+```py
+from mqtt_topping import MqttTopping
+
+mqtt_topping = MqttTopping()
+mqtt_topping.connect("127.0.0.1", 1883)
+```
+
+Create an instance of the mqtt topping with a TouchDesigner mqtt-client:
+
+```py
+from mqtt_topping import MqttTopping, TouchDesignerClientAdaptor
+
+client = op('mqttclient')
+client_adaptor = TouchDesignerClientAdaptor(client)
+mqtt_topping = MqttTopping(client_adaptor)
+```
+
+Subscribe to a topic:
+
+```py
+
+ def callback(topic, payload):
+    # handle message here
+
+mqtt_topping.subscribe("test/topic/doTest", callback)
+```
+
+Unsubscribe from a topic:
+
+```py
+
+ def callback(topic, payload):
+    # handle message here
+
+mqtt_topping.unsubscribe("test/topic/doTest", callback)
+```
+
+Publish a message:
+
+```py
+payload = {
+    "id": 0,
+    "name": "bob"
+}
+mqtt_topping.publish("test/topic/doTest", payload)
+```
 
 ## Development
 
