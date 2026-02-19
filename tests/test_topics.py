@@ -52,13 +52,53 @@ def test_subscribe(test_topping):
     test_topping.subscribe(topic, callback_3)
     test_topping.subscribe(topic, callback_3)
 
-    assert test_topping.client_adaptor.executed_commands == ['subscribe']
-    assert test_topping.client_adaptor.subscription == topic
+    assert test_topping.client_adaptor.performed_commands == ['subscribe']
+    assert test_topping.client_adaptor.performed_subscriptions == [topic]
     assert len(test_topping.subscriptions[topic]['handlers']) == 3
     assert test_topping.subscriptions[topic]['handlers'][0].callback is callback_1
     assert test_topping.subscriptions[topic]['handlers'][1].callback is callback_2
     assert test_topping.subscriptions[topic]['handlers'][2].callback is callback_3
-    assert test_topping.client_adaptor.subscription == topic
+
+
+def test_refresh_subscriptions(test_topping):
+    topic1 = "test/1/test"
+    topic2 = "test/2/test"
+    topic3 = "test/3/test"
+
+    def callback_1(_, __):
+        return
+
+    def callback_2(_, __):
+        return
+
+    def callback_3(_, __):
+        return
+
+    def callback_4(_, __):
+        return
+
+    test_topping.subscribe(topic1, callback_1)
+    test_topping.subscribe(topic1, callback_2)
+    test_topping.subscribe(topic2, callback_3)
+    test_topping.subscribe(topic3, callback_4)
+
+    test_topping.refresh_subscriptions()
+
+    assert test_topping.client_adaptor.performed_commands == [
+        'subscribe', 'subscribe', 'subscribe',
+        'subscribe', 'subscribe', 'subscribe'
+    ]
+    assert test_topping.client_adaptor.performed_subscriptions == [
+        topic1, topic2, topic3,
+        topic1, topic2, topic3
+    ]
+    assert len(test_topping.subscriptions[topic1]['handlers']) == 2
+    assert len(test_topping.subscriptions[topic2]['handlers']) == 1
+    assert len(test_topping.subscriptions[topic3]['handlers']) == 1
+    assert test_topping.subscriptions[topic1]['handlers'][0].callback is callback_1
+    assert test_topping.subscriptions[topic1]['handlers'][1].callback is callback_2
+    assert test_topping.subscriptions[topic2]['handlers'][0].callback is callback_3
+    assert test_topping.subscriptions[topic3]['handlers'][0].callback is callback_4
 
 
 def test_unsubscribe(test_topping):
@@ -79,21 +119,21 @@ def test_unsubscribe(test_topping):
     test_topping.subscribe(topic, callback_3)
 
     test_topping.unsubscribe(topic, callback_1)
-    assert test_topping.client_adaptor.subscription == topic
+    assert test_topping.client_adaptor.performed_subscriptions == [topic]
     assert test_topping.subscriptions[topic]['handlers'][0].callback is callback_2
     assert test_topping.subscriptions[topic]['handlers'][1].callback is callback_3
 
     test_topping.unsubscribe(topic, callback_2)
-    assert test_topping.client_adaptor.subscription == topic
+    assert test_topping.client_adaptor.performed_subscriptions == [topic]
     assert test_topping.subscriptions[topic]['handlers'][0].callback is callback_3
 
     test_topping.unsubscribe(topic, callback_3)
-    assert test_topping.client_adaptor.subscription is None
+    assert len(test_topping.client_adaptor.performed_subscriptions) == 0
     assert topic not in test_topping.subscriptions
 
     test_topping.unsubscribe(topic, callback_3)
 
-    assert test_topping.client_adaptor.executed_commands == [
+    assert test_topping.client_adaptor.performed_commands == [
         'subscribe', 'unsubscribe'
     ]
 
@@ -116,12 +156,12 @@ def test_force_unsubscribe(test_topping):
     test_topping.subscribe(topic, callback_3)
 
     test_topping.force_unsubscribe(topic)
-    assert test_topping.client_adaptor.subscription is None
+    assert len(test_topping.client_adaptor.performed_subscriptions) == 0
     assert topic not in test_topping.subscriptions
 
     test_topping.force_unsubscribe(topic)
 
-    assert test_topping.client_adaptor.executed_commands == [
+    assert test_topping.client_adaptor.performed_commands == [
         'subscribe', 'unsubscribe'
     ]
 
@@ -154,4 +194,4 @@ def test_messages(test_topping, callbacks):
     assert callbacks[2][0] == 3
     assert callbacks[2][1] == topic
     assert callbacks[2][2] == payload
-    assert test_topping.client_adaptor.executed_commands == ['subscribe']
+    assert test_topping.client_adaptor.performed_commands == ['subscribe']

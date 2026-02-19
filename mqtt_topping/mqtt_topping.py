@@ -68,6 +68,15 @@ class MqttTopping:
         if needs_subscribe:
             self.client_adaptor.subscribe(topic, qos=qos)
 
+    def refresh_subscriptions(self):
+        """
+        Re-subscribes to all registered topics. Handlers will stay valid.
+        """
+        for topic, subscription in self.subscriptions.items():
+            handler = subscription['handlers'][0]
+            qos = handler.qos
+            self.client_adaptor.subscribe(topic, qos=qos)
+
     def unsubscribe(self, topic: str, callback: any):
         """
         Unubscribe a specified callback from a topic
