@@ -97,6 +97,22 @@ class MqttTopping:
             del self.subscriptions[topic]
             self.client_adaptor.unsubscribe(topic)
 
+    def force_unsubscribe(self, topic: str):
+        """
+        Unubscribe all callbacks from a topic
+
+        :param topic: the topic to unsubscribe from
+        :type topic: str
+        """
+        if topic not in self.subscriptions:
+            return
+        subscription = self.subscriptions[topic]
+        if subscription is None:
+            return
+
+        del self.subscriptions[topic]
+        self.client_adaptor.unsubscribe(topic)
+
     def publish(self, topic: str, payload: any):
         """
         Publish a message with a payload to a specific topic

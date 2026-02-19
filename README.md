@@ -37,21 +37,25 @@ mqtt_topping = MqttTopping(client_adaptor)
 Subscribe to a topic:
 
 ```py
-
- def callback(topic, payload):
+def callback(topic, payload):
     # handle message here
 
 mqtt_topping.subscribe("test/topic/doTest", callback)
 ```
 
-Unsubscribe from a topic:
+Unsubscribe a given callback from a topic:
 
 ```py
-
- def callback(topic, payload):
+def callback(topic, payload):
     # handle message here
 
 mqtt_topping.unsubscribe("test/topic/doTest", callback)
+```
+
+Unsubscribe all callbacks from a topic:
+
+```py
+mqtt_topping.force_unsubscribe("test/topic/doTest")
 ```
 
 Publish a message:
@@ -69,15 +73,15 @@ mqtt_topping.publish("test/topic/doTest", payload)
 To install dev dependencies:
 
 ```sh
-$ python3 -m venv venv
-$ source venv/bin/activate
-$ pip install -r requirements_dev.txt
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements_dev.txt
 ```
 
 To run unit tests:
 
 ```sh
-$ python -m pytest tests
+python -m pytest tests
 ```
 
 To release a new version:
