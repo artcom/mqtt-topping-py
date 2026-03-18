@@ -163,7 +163,7 @@ class MqttTopping:
 
         :param char: the char to inspect
         :type char: str
-        :return: true, of the char is uppercase
+        :return: true, if the char is uppercase
         :rtype: bool
         """
         return 'A' <= char <= 'Z'
@@ -214,31 +214,32 @@ class MqttTopping:
         :return: true, if the topic matches the wildcard pattern
         :rtype: bool
         """
-        toplevels = topic.split("/")
-        sublevels = subscription.split("/")
-        sublen = len(sublevels)
-
-        has_hash = sublevels[-1] == "#"
-        has_plus = "+" in subscription
-        has_wildcards = has_hash or has_plus
-
-        comparison_end_index = (sublen - 1) if has_hash else sublen
         if subscription == topic:
             return True
+
+        subscription_levels = subscription.split("/")
+        subscription_len = len(subscription_levels)
+        topic_levels = topic.split("/")
+
+        has_hash = subscription_levels[-1] == "#"
+        has_plus = "+" in subscription
+        has_wildcards = has_hash or has_plus
 
         if not has_wildcards:
             return False
 
-        if comparison_end_index > len(toplevels):
+        last_index = (subscription_len - 1) if has_hash else subscription_len
+
+        if last_index > len(topic_levels):
             return False
 
-        for i in range(0, comparison_end_index):
-            sub = sublevels[i]
-            top = toplevels[i]
+        for i in range(0, last_index):
+            sub = subscription_levels[i]
+            top = topic_levels[i]
             if sub != "+" and sub != top:
                 return False
 
         if has_hash:
-            return len(toplevels) >= sublen-1
+            return len(topic_levels) >= subscription_len-1
 
-        return len(sublevels) == len(toplevels) and "" not in toplevels
+        return len(subscription_levels) == len(topic_levels) and "" not in topic_levels
