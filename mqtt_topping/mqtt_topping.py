@@ -177,9 +177,52 @@ class MqttTopping:
         :param payload: the payload of the received message
         :type payload: any
         """
-        if topic not in self.subscriptions:
-            return
+        if topic in self.subscriptions:
+            self._process_handlers_for_topic(topic, payload)
+
+        for subscription_topic in self.subscriptions:
+            if "+" not in subscription_topic and "#" not in subscription_topic:
+                continue
+
+            if self._match_topic(topic, subscription_topic) is True:
+                self._process_handlers_for_topic(subscription_topic, payload)
+
+    def _process_handlers_for_topic(self, topic: str, payload: any):
+        """
+        """
         if len(payload):
             payload = json.loads(payload.decode())
             for handler in self.subscriptions[topic]['handlers']:
                 handler.callback(topic, payload)
+
+    def _match_topic(self, topic: str, subscription: str) -> bool:
+        """
+        """
+        toplevels = topic.split("/")
+        sublevels = subscription.split("/")
+        sublen = len(sublevels)
+
+        has_hash = sublevels[-1] == "#"
+        has_plus = "+" in subscription
+        has_wildcards = has_hash or has_plus
+
+        comparison_end_index = (sublen - 1) if has_hash else sublen
+        if subscription == topic:
+            return True
+
+        if not has_wildcards:
+            return False
+
+        if comparison_end_index > len(toplevels):
+            return False
+
+        for i in range(0, comparison_end_index):
+            sub = sublevels[i]
+            top = toplevels[i]
+            if sub != "+" and sub != top:
+                return False
+
+        if has_hash:
+            return len(toplevels) >= sublen-1
+
+        return len(sublevels) == len(toplevels) and "" not in toplevels

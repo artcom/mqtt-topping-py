@@ -195,3 +195,55 @@ def test_messages(test_topping, callbacks):
     assert callbacks[2][1] == topic
     assert callbacks[2][2] == payload
     assert test_topping.client_adaptor.performed_commands == ['subscribe']
+
+
+def test_messages_with_wildcard_hash(test_topping, callbacks):
+    topic_hash = "test/#"
+    topic0 = "test/test"
+    topic1 = "test/0/test"
+    topic2 = "noop/1/test"
+    payload = "hello"
+    json_payload = json.dumps(payload).encode()
+
+    def callback(topic, payload):
+        callbacks.append([1, topic, payload])
+
+    test_topping.subscribe(topic_hash, callback)
+
+    test_topping.client_adaptor.on_message(topic0, json_payload)
+    test_topping.client_adaptor.on_message(topic1, json_payload)
+    test_topping.client_adaptor.on_message(topic2, json_payload)
+
+    assert callbacks[0][0] == 1
+    assert callbacks[0][1] == topic_hash
+    assert callbacks[0][2] == payload
+    assert callbacks[1][0] == 1
+    assert callbacks[1][1] == topic_hash
+    assert callbacks[1][2] == payload
+    assert len(callbacks) == 2
+
+
+def test_messages_with_wildcard_plus(test_topping, callbacks):
+    topic_plus = "test/+/test"
+    topic0 = "test/0/test"
+    topic1 = "test/1/test"
+    topic2 = "test/2"
+    payload = "hello"
+    json_payload = json.dumps(payload).encode()
+
+    def callback(topic, payload):
+        callbacks.append([1, topic, payload])
+
+    test_topping.subscribe(topic_plus, callback)
+
+    test_topping.client_adaptor.on_message(topic0, json_payload)
+    test_topping.client_adaptor.on_message(topic1, json_payload)
+    test_topping.client_adaptor.on_message(topic2, json_payload)
+
+    assert callbacks[0][0] == 1
+    assert callbacks[0][1] == topic_plus
+    assert callbacks[0][2] == payload
+    assert callbacks[1][0] == 1
+    assert callbacks[1][1] == topic_plus
+    assert callbacks[1][2] == payload
+    assert len(callbacks) == 2
