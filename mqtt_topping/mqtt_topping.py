@@ -3,6 +3,7 @@ import json
 from mqtt_topping.subscription_handler import SubscriptionHandler
 from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
 from mqtt_topping.paho_client_adaptor import PahoClientAdaptor
+from mqtt_topping.invalidTopicError import InvalidTopicError
 
 
 class MqttTopping:
@@ -41,6 +42,7 @@ class MqttTopping:
     def subscribe(self, topic: str, callback: any, qos: int = 2):
         """
         Subscribe to a topic
+        Throws an InvalidTopicError when the topic is not valid.
 
         :param topic: the topic to subscribe to
         :type topic: str
@@ -49,6 +51,7 @@ class MqttTopping:
         :param qos: the Quality of Service level:param qos: Description
         :type qos: int
         """
+        self._validate_topic(topic)
         needs_subscribe = False
         if topic not in self.subscriptions:
             self.subscriptions[topic] = {'handlers': []}
@@ -187,6 +190,31 @@ class MqttTopping:
             if self._match_topic(topic, subscription_topic) is True:
                 self._process_handlers_for_topic(subscription_topic, payload)
 
+    def _validate_topic(self, topic):
+        """
+        Validates a topic.
+        Throws an InvalidTopicError when the topic is not valid.
+
+        :param topic: the topic to validate
+        :type topic: str
+        """
+        if len(topic) == 0:
+            raise InvalidTopicError("topic must be a non-empty string")
+
+        if "#" in topic and topic[-1] != "#" and topic != "#":
+            raise InvalidTopicError(
+                "wildcard '#' must occupy an entire level and be the last character (e.g., 'foo/#' or '#')")
+
+        parts = topic.split("/")
+        for part in parts:
+            if "+" in part and part != "+":
+                raise InvalidTopicError(
+                    "wildcard '+' must occupy an entire level (e.g., 'foo/+/bar')")
+
+            if len(part) == 0 and topic != "/" and topic != "":
+                raise InvalidTopicError(
+                    "topic must not contain empty levels (e.g., 'foo//bar')")
+
     def _process_handlers_for_topic(self, topic: str, payload: any):
         """
         Executes the associated subscription handlers if the payload is valid.
@@ -207,10 +235,10 @@ class MqttTopping:
         Wildcards can be '+' and '#'.
         Returns True if the subscription contains wildcards and the topic matches the pattern.
 
-        :param topic: the topic the message was received under
+        :param topic: the topic to match
         :type topic: str
-        :param payload: the payload of the received message
-        :type payload: any
+        :param subscription: the subscription to match the topic to
+        :type subscription: str
         :return: true, if the topic matches the wildcard pattern
         :rtype: bool
         """

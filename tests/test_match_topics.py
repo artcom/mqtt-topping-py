@@ -9,7 +9,7 @@ def topping_fixture():
     yield MqttTopping(ClientAdaptor())
 
 
-def test_messages_with_wildcard_hash(test_topping):
+def test_topics_with_wildcard_hash(test_topping):
     topic = "test/hash/#"
     topic0 = "test/hash/test"
     topic1 = "test/hash/0/test"
@@ -24,7 +24,7 @@ def test_messages_with_wildcard_hash(test_topping):
     assert test_topping._match_topic(topic4, topic) is False
 
 
-def test_messages_with_wildcard_plus_start(test_topping):
+def test_topics_with_wildcard_plus_start(test_topping):
     topic = "+/plus/test"
     topic0 = "0/plus/test"
     topic1 = "1/plus/test"
@@ -37,7 +37,7 @@ def test_messages_with_wildcard_plus_start(test_topping):
     assert test_topping._match_topic(topic3, topic) is False
 
 
-def test_messages_with_wildcard_plus_middle(test_topping):
+def test_topics_with_wildcard_plus_middle(test_topping):
     topic = "test/plus/+/test"
     topic0 = "test/plus/0/test"
     topic1 = "test/plus/1/test"
@@ -50,7 +50,7 @@ def test_messages_with_wildcard_plus_middle(test_topping):
     assert test_topping._match_topic(topic3, topic) is False
 
 
-def test_messages_with_wildcard_plus_end(test_topping):
+def test_topics_with_wildcard_plus_end(test_topping):
     topic = "test/plus/+"
     topic0 = "test/plus/0"
     topic1 = "test/plus/1"

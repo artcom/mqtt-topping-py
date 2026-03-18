@@ -1,0 +1,2 @@
+class InvalidTopicError(Exception):
+    pass
