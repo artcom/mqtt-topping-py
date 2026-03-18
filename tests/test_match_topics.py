@@ -10,28 +10,54 @@ def topping_fixture():
 
 
 def test_messages_with_wildcard_hash(test_topping):
-    topic_hash = "test/hash/#"
+    topic = "test/hash/#"
     topic0 = "test/hash/test"
     topic1 = "test/hash/0/test"
     topic2 = "test/hash"
     topic3 = "test"
     topic4 = "test/noop/1/test"
 
-    assert test_topping._match_topic(topic0, topic_hash) is True
-    assert test_topping._match_topic(topic1, topic_hash) is True
-    assert test_topping._match_topic(topic2, topic_hash) is True
-    assert test_topping._match_topic(topic3, topic_hash) is False
-    assert test_topping._match_topic(topic4, topic_hash) is False
+    assert test_topping._match_topic(topic0, topic) is True
+    assert test_topping._match_topic(topic1, topic) is True
+    assert test_topping._match_topic(topic2, topic) is True
+    assert test_topping._match_topic(topic3, topic) is False
+    assert test_topping._match_topic(topic4, topic) is False
 
 
-def test_messages_with_wildcard_plus(test_topping):
-    topic_plus = "test/+/test"
-    topic0 = "test/0/test"
-    topic1 = "test/1/test"
-    topic2 = "test/2"
-    topic3 = "noop/1/test"
+def test_messages_with_wildcard_plus_start(test_topping):
+    topic = "+/plus/test"
+    topic0 = "0/plus/test"
+    topic1 = "1/plus/test"
+    topic2 = "2/plus/noop"
+    topic3 = "0/noop/1/test"
 
-    assert test_topping._match_topic(topic0, topic_plus) is True
-    assert test_topping._match_topic(topic1, topic_plus) is True
-    assert test_topping._match_topic(topic2, topic_plus) is False
-    assert test_topping._match_topic(topic3, topic_plus) is False
+    assert test_topping._match_topic(topic0, topic) is True
+    assert test_topping._match_topic(topic1, topic) is True
+    assert test_topping._match_topic(topic2, topic) is False
+    assert test_topping._match_topic(topic3, topic) is False
+
+
+def test_messages_with_wildcard_plus_middle(test_topping):
+    topic = "test/plus/+/test"
+    topic0 = "test/plus/0/test"
+    topic1 = "test/plus/1/test"
+    topic2 = "test/plus/2"
+    topic3 = "noop/plus/1/test"
+
+    assert test_topping._match_topic(topic0, topic) is True
+    assert test_topping._match_topic(topic1, topic) is True
+    assert test_topping._match_topic(topic2, topic) is False
+    assert test_topping._match_topic(topic3, topic) is False
+
+
+def test_messages_with_wildcard_plus_end(test_topping):
+    topic = "test/plus/+"
+    topic0 = "test/plus/0"
+    topic1 = "test/plus/1"
+    topic2 = "test/plus/2/more"
+    topic3 = "noop/plus/1/test"
+
+    assert test_topping._match_topic(topic0, topic) is True
+    assert test_topping._match_topic(topic1, topic) is True
+    assert test_topping._match_topic(topic2, topic) is False
+    assert test_topping._match_topic(topic3, topic) is False
