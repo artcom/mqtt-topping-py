@@ -189,6 +189,12 @@ class MqttTopping:
 
     def _process_handlers_for_topic(self, topic: str, payload: any):
         """
+        Executes the associated subscription handlers if the payload is valid.
+
+        :param topic: the topic the message was received under
+        :type topic: str
+        :param payload: the payload of the received message
+        :type payload: any
         """
         if len(payload):
             payload = json.loads(payload.decode())
@@ -197,6 +203,16 @@ class MqttTopping:
 
     def _match_topic(self, topic: str, subscription: str) -> bool:
         """
+        Parses the given subscription topic for wildcards and checks if the given topic matches the wildcard pattern.
+        Wildcards can be '+' and '#'.
+        Returns True if the subscription contains wildcards and the topic matches the pattern.
+
+        :param topic: the topic the message was received under
+        :type topic: str
+        :param payload: the payload of the received message
+        :type payload: any
+        :return: true, if the topic matches the wildcard pattern
+        :rtype: bool
         """
         toplevels = topic.split("/")
         sublevels = subscription.split("/")
