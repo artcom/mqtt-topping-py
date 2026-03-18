@@ -10,14 +10,18 @@ def topping_fixture():
 
 
 def test_messages_with_wildcard_hash(test_topping):
-    topic_hash = "test/#"
-    topic0 = "test/test"
-    topic1 = "test/0/test"
-    topic2 = "noop/1/test"
+    topic_hash = "test/hash/#"
+    topic0 = "test/hash/test"
+    topic1 = "test/hash/0/test"
+    topic2 = "test/hash"
+    topic3 = "test"
+    topic4 = "test/noop/1/test"
 
     assert test_topping._match_topic(topic0, topic_hash) is True
     assert test_topping._match_topic(topic1, topic_hash) is True
-    assert test_topping._match_topic(topic2, topic_hash) is False
+    assert test_topping._match_topic(topic2, topic_hash) is True
+    assert test_topping._match_topic(topic3, topic_hash) is False
+    assert test_topping._match_topic(topic4, topic_hash) is False
 
 
 def test_messages_with_wildcard_plus(test_topping):
