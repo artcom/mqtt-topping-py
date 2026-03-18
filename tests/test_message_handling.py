@@ -1,6 +1,7 @@
 import json
 import pytest
 
+from mqtt_topping import InvalidTopicError
 from mqtt_topping import MqttTopping
 from tests.client_adaptor import ClientAdaptor
 
@@ -13,26 +14,6 @@ def topping_fixture():
 @pytest.fixture(name="callbacks")
 def callbacks_fixture():
     yield []
-
-
-def test_event_or_command(test_topping):
-    assert test_topping.is_event_or_command("d") is False
-    assert test_topping.is_event_or_command("do") is False
-    assert test_topping.is_event_or_command("d123") is False
-    assert test_topping.is_event_or_command("dont") is False
-    assert test_topping.is_event_or_command("doW") is True
-    assert test_topping.is_event_or_command("doWork") is True
-
-    assert test_topping.is_event_or_command("o") is False
-    assert test_topping.is_event_or_command("on") is False
-    assert test_topping.is_event_or_command("o123") is False
-    assert test_topping.is_event_or_command("one") is False
-    assert test_topping.is_event_or_command("onE") is True
-    assert test_topping.is_event_or_command("onEvent") is True
-
-    assert test_topping.is_event_or_command("a") is False
-    assert test_topping.is_event_or_command("a1") is False
-    assert test_topping.is_event_or_command("something") is False
 
 
 def test_subscribe(test_topping):
@@ -58,6 +39,33 @@ def test_subscribe(test_topping):
     assert test_topping.subscriptions[topic]['handlers'][0].callback is callback_1
     assert test_topping.subscriptions[topic]['handlers'][1].callback is callback_2
     assert test_topping.subscriptions[topic]['handlers'][2].callback is callback_3
+
+
+def test_subscribe_with_invalid_topics(test_topping):
+
+    def callback(_, __):
+        pass
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.subscribe("", callback)
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.subscribe("/test/test", callback)
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.subscribe("//test/test", callback)
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.subscribe("test//test", callback)
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.subscribe("test/test//", callback)
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.subscribe("#/", callback)
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.subscribe("#/test", callback)
 
 
 def test_refresh_subscriptions(test_topping):

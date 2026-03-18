@@ -51,7 +51,7 @@ class MqttTopping:
         :param qos: the Quality of Service level:param qos: Description
         :type qos: int
         """
-        self._validate_topic(topic)
+        self.validate_topic(topic)
         needs_subscribe = False
         if topic not in self.subscriptions:
             self.subscriptions[topic] = {'handlers': []}
@@ -181,16 +181,16 @@ class MqttTopping:
         :type payload: any
         """
         if topic in self.subscriptions:
-            self._process_handlers_for_topic(topic, payload)
+            self.process_handlers_for_topic(topic, payload)
 
         for subscription_topic in self.subscriptions:
             if "+" not in subscription_topic and "#" not in subscription_topic:
                 continue
 
-            if self._match_topic(topic, subscription_topic) is True:
-                self._process_handlers_for_topic(subscription_topic, payload)
+            if self.match_topic(topic, subscription_topic) is True:
+                self.process_handlers_for_topic(subscription_topic, payload)
 
-    def _validate_topic(self, topic):
+    def validate_topic(self, topic):
         """
         Validates a topic.
         Throws an InvalidTopicError when the topic is not valid.
@@ -215,7 +215,7 @@ class MqttTopping:
                 raise InvalidTopicError(
                     "topic must not contain empty levels (e.g., 'foo//bar')")
 
-    def _process_handlers_for_topic(self, topic: str, payload: any):
+    def process_handlers_for_topic(self, topic: str, payload: any):
         """
         Executes the associated subscription handlers if the payload is valid.
 
@@ -229,7 +229,7 @@ class MqttTopping:
             for handler in self.subscriptions[topic]['handlers']:
                 handler.callback(topic, payload)
 
-    def _match_topic(self, topic: str, subscription: str) -> bool:
+    def match_topic(self, topic: str, subscription: str) -> bool:
         """
         Parses the given subscription topic for wildcards and checks if the given topic matches the wildcard pattern.
         Wildcards can be '+' and '#'.
