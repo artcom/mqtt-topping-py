@@ -235,10 +235,10 @@ def test_messages_with_wildcard_hash(test_topping, payload, json_payload, callba
     test_topping.client_adaptor.on_message(topic2, json_payload)
 
     assert callbacks[0][0] == 1
-    assert callbacks[0][1] == topic_hash
+    assert callbacks[0][1] == topic0
     assert callbacks[0][2] == payload
     assert callbacks[1][0] == 1
-    assert callbacks[1][1] == topic_hash
+    assert callbacks[1][1] == topic1
     assert callbacks[1][2] == payload
     assert len(callbacks) == 2
 
@@ -259,9 +259,9 @@ def test_messages_with_wildcard_plus(test_topping, payload, json_payload, callba
     test_topping.client_adaptor.on_message(topic2, json_payload)
 
     assert callbacks[0][0] == 1
-    assert callbacks[0][1] == topic_plus
+    assert callbacks[0][1] == topic0
     assert callbacks[0][2] == payload
     assert callbacks[1][0] == 1
-    assert callbacks[1][1] == topic_plus
+    assert callbacks[1][1] == topic1
     assert callbacks[1][2] == payload
     assert len(callbacks) == 2

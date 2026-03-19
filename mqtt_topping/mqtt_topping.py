@@ -183,14 +183,15 @@ class MqttTopping:
         :type payload: any
         """
         if topic in self.subscriptions:
-            self.process_handlers_for_topic(topic, payload)
+            self.process_handlers_for_topic(topic, topic, payload)
 
         for subscription_topic in self.subscriptions:
             if "+" not in subscription_topic and "#" not in subscription_topic:
                 continue
 
             if self.match_topic(topic, subscription_topic) is True:
-                self.process_handlers_for_topic(subscription_topic, payload)
+                self.process_handlers_for_topic(
+                    subscription_topic, topic, payload)
 
     def validate_topic(self, topic):
         """
@@ -229,10 +230,12 @@ class MqttTopping:
             raise InvalidTopicError(
                 "publishing to wildcard topics ('#' or '+') is not allowed")
 
-    def process_handlers_for_topic(self, topic: str, payload: any):
+    def process_handlers_for_topic(self, subscription_topic: str, topic: str, payload: any):
         """
-        Executes the associated subscription handlers if the payload is valid.
+        Executes the associated subscription handlers for the given topic.
 
+        :param subscription_topic: the topic subscribed to
+        :type subscription_topic: str
         :param topic: the topic the message was received under
         :type topic: str
         :param payload: the payload of the received message
@@ -240,7 +243,9 @@ class MqttTopping:
         """
         if len(payload):
             payload = json.loads(payload.decode())
-            for handler in self.subscriptions[topic]['handlers']:
+            if subscription_topic not in self.subscriptions:
+                return
+            for handler in self.subscriptions[subscription_topic]['handlers']:
                 handler.callback(topic, payload)
 
     def match_topic(self, topic: str, subscription: str) -> bool:
