@@ -11,6 +11,17 @@ def topping_fixture():
     yield MqttTopping(ClientAdaptor())
 
 
+@pytest.fixture(name="payload")
+def payload_fixture():
+    yield "hello"
+
+
+@pytest.fixture(name="json_payload")
+def json_payload_fixture():
+    json_payload = json.dumps("hello").encode()
+    yield json_payload
+
+
 @pytest.fixture(name="callbacks")
 def callbacks_fixture():
     yield []
@@ -174,10 +185,13 @@ def test_force_unsubscribe(test_topping):
     ]
 
 
-def test_messages(test_topping, callbacks):
+def test_messages_empty(test_topping, payload):
     topic = "test/0/test"
-    payload = "hello"
-    json_payload = json.dumps(payload).encode()
+    test_topping.client_adaptor.on_message(topic, payload)
+
+
+def test_messages(test_topping, payload, json_payload, callbacks):
+    topic = "test/0/test"
 
     def callback_1(topic, payload):
         callbacks.append([1, topic, payload])
@@ -205,13 +219,11 @@ def test_messages(test_topping, callbacks):
     assert test_topping.client_adaptor.performed_commands == ['subscribe']
 
 
-def test_messages_with_wildcard_hash(test_topping, callbacks):
+def test_messages_with_wildcard_hash(test_topping, payload, json_payload, callbacks):
     topic_hash = "test/#"
     topic0 = "test/test"
     topic1 = "test/0/test"
     topic2 = "noop/1/test"
-    payload = "hello"
-    json_payload = json.dumps(payload).encode()
 
     def callback(topic, payload):
         callbacks.append([1, topic, payload])
@@ -231,13 +243,11 @@ def test_messages_with_wildcard_hash(test_topping, callbacks):
     assert len(callbacks) == 2
 
 
-def test_messages_with_wildcard_plus(test_topping, callbacks):
+def test_messages_with_wildcard_plus(test_topping, payload, json_payload, callbacks):
     topic_plus = "test/+/test"
     topic0 = "test/0/test"
     topic1 = "test/1/test"
     topic2 = "test/2"
-    payload = "hello"
-    json_payload = json.dumps(payload).encode()
 
     def callback(topic, payload):
         callbacks.append([1, topic, payload])

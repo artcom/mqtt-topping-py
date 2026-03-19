@@ -1,11 +1,8 @@
 import json
-import logging
 import time
-
 import pytest
-from mqtt_topping import MqttTopping
 
-LOGGER = logging.getLogger(__name__)
+from mqtt_topping import MqttTopping
 
 
 @pytest.fixture(name="paho_topping")
