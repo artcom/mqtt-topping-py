@@ -8,7 +8,7 @@ class SubscriptionHandler:
 
     def __init__(self, qos: int, callback: any):
         """
-        Creates a subscription handler object
+        Creates a subscription handler object.
 
         :param qos: Quality of Service level
         :type qos: int

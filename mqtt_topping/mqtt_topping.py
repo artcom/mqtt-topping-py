@@ -24,7 +24,7 @@ class MqttTopping:
 
     def connect(self, host: str, port: int):
         """
-        Connect to an mqtt server
+        Connect to an mqtt server.
 
         :param host: Host of the mqtt server
         :type host: str
@@ -35,7 +35,7 @@ class MqttTopping:
 
     def disconnect(self):
         """
-        Disconnect from an mqtt server
+        Disconnect from an mqtt server.
         """
         self.client_adaptor.disconnect()
 
@@ -82,7 +82,7 @@ class MqttTopping:
 
     def unsubscribe(self, topic: str, callback: any):
         """
-        Unubscribe a specified callback from a topic
+        Unubscribe a specified callback from a topic.
 
         :param topic: the topic to unsubscribe from
         :type topic: str
@@ -111,7 +111,7 @@ class MqttTopping:
 
     def force_unsubscribe(self, topic: str):
         """
-        Unubscribe all callbacks from a topic
+        Unubscribe all callbacks from a topic.
 
         :param topic: the topic to unsubscribe from
         :type topic: str
@@ -127,7 +127,7 @@ class MqttTopping:
 
     def publish(self, topic: str, payload: any):
         """
-        Publish a message with a payload to a specific topic
+        Publish a message with a payload to a specific topic.
         Throws an InvalidTopicError when the topic is not valid.
 
         :param topic: the topic to publish to
@@ -142,7 +142,7 @@ class MqttTopping:
 
     def is_event_or_command(self, topic: str) -> bool:
         """
-        Returns true when a given topic is an event or a command
+        Returns true when a given topic is an event or a command.
 
         :param topic: the topic to inspect
         :type topic: str
@@ -164,7 +164,7 @@ class MqttTopping:
 
     def is_upper_case(self, char: str) -> bool:
         """
-        Returns true if the given chat is uppercase
+        Returns true if the given chat is uppercase.
 
         :param char: the char to inspect
         :type char: str
@@ -175,7 +175,7 @@ class MqttTopping:
 
     def on_message(self, topic: str, payload: any):
         """
-        Handles the reception of a message
+        Handles the reception of a message.
 
         :param topic: the topic the message was received under
         :type topic: str
@@ -220,7 +220,7 @@ class MqttTopping:
 
     def validate_topic_for_publish(self, topic: str):
         """
-        Validates a topic for publishing
+        Validates a topic for publishing.
         Throws an InvalidTopicError when the topic is not valid.
 
         :param topic: the topic to validate
