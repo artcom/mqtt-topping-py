@@ -185,9 +185,9 @@ def test_force_unsubscribe(test_topping):
     ]
 
 
-def test_messages_empty(test_topping, payload):
+def test_messages_empty(test_topping, json_payload):
     topic = "test/0/test"
-    test_topping.client_adaptor.on_message(topic, payload)
+    test_topping.client_adaptor.on_message(topic, json_payload)
 
 
 def test_messages(test_topping, payload, json_payload, callbacks):
@@ -216,6 +216,35 @@ def test_messages(test_topping, payload, json_payload, callbacks):
     assert callbacks[2][0] == 3
     assert callbacks[2][1] == topic
     assert callbacks[2][2] == payload
+    assert test_topping.client_adaptor.performed_commands == ['subscribe']
+
+
+def test_messages_no_parsing(test_topping, payload, json_payload, callbacks):
+    topic = "test/0/test"
+
+    def callback_1(topic, payload):
+        callbacks.append([1, topic, payload])
+
+    def callback_2(topic, payload):
+        callbacks.append([2, topic, payload])
+
+    def callback_3(topic, payload):
+        callbacks.append([3, topic, payload])
+
+    test_topping.subscribe(topic, callback_1, parse=False)
+    test_topping.subscribe(topic, callback_2, parse=True)
+    test_topping.subscribe(topic, callback_3, parse=False)
+
+    test_topping.client_adaptor.on_message(topic, json_payload)
+    assert callbacks[0][0] == 1
+    assert callbacks[0][1] == topic
+    assert callbacks[0][2] == json_payload
+    assert callbacks[1][0] == 2
+    assert callbacks[1][1] == topic
+    assert callbacks[1][2] == payload
+    assert callbacks[2][0] == 3
+    assert callbacks[2][1] == topic
+    assert callbacks[2][2] == json_payload
     assert test_topping.client_adaptor.performed_commands == ['subscribe']
 
 

@@ -39,7 +39,7 @@ class MqttTopping:
         """
         self.client_adaptor.disconnect()
 
-    def subscribe(self, topic: str, callback: any, qos: int = 2):
+    def subscribe(self, topic: str, callback: any, qos: int = 2, parse: bool = True):
         """
         Subscribe to a topic
         Throws an InvalidTopicError when the topic is not valid.
@@ -65,7 +65,7 @@ class MqttTopping:
         if handler:
             handler.qos = qos
         else:
-            handler = SubscriptionHandler(qos, callback)
+            handler = SubscriptionHandler(parse, qos, callback)
             self.subscriptions[topic]['handlers'].append(handler)
 
         if needs_subscribe:
@@ -241,11 +241,14 @@ class MqttTopping:
         :param payload: the payload of the received message
         :type payload: any
         """
-        if len(payload):
-            payload = json.loads(payload.decode())
-            if subscription_topic not in self.subscriptions:
-                return
-            for handler in self.subscriptions[subscription_topic]['handlers']:
+
+        if subscription_topic not in self.subscriptions:
+            return
+        for handler in self.subscriptions[subscription_topic]['handlers']:
+            if handler.parse and len(payload):
+                payload_parsed = json.loads(payload.decode())
+                handler.callback(topic, payload_parsed)
+            else:
                 handler.callback(topic, payload)
 
     def match_topic(self, topic: str, subscription: str) -> bool:
