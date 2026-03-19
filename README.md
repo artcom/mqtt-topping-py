@@ -43,13 +43,20 @@ def callback(topic, payload):
 mqtt_topping.subscribe("test/topic/doTest", callback)
 ```
 
-Turn off payload parsing:
+Subscribe to raw payload without parsing:
 
 ```py
 def callback(topic, payload):
     # handle message here
 
 mqtt_topping.subscribe("test/topic/doTest", callback, parse=False)
+```
+
+Subscribe using a wild card:
+
+```py
+mqtt_topping.subscribe("test/topic/#", callback, parse=False)
+mqtt_topping.subscribe("test/+/doTest", callback, parse=False)
 ```
 
 Unsubscribe a given callback from a topic:
