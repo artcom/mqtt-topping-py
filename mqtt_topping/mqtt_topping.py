@@ -128,12 +128,14 @@ class MqttTopping:
     def publish(self, topic: str, payload: any):
         """
         Publish a message with a payload to a specific topic
+        Throws an InvalidTopicError when the topic is not valid.
 
         :param topic: the topic to publish to
         :type topic: str
         :param payload: the payload to publish
         :type payload: any
         """
+        self.validate_topic_for_publish(topic)
         retain = not self.is_event_or_command(topic)
         payload = json.dumps(payload).encode()
         self.client_adaptor.publish(topic, payload, qos=2, retain=retain)
@@ -214,6 +216,18 @@ class MqttTopping:
             if len(part) == 0 and topic != "/" and topic != "":
                 raise InvalidTopicError(
                     "topic must not contain empty levels (e.g., 'foo//bar')")
+
+    def validate_topic_for_publish(self, topic: str):
+        """
+        Validates a topic for publishing
+        Throws an InvalidTopicError when the topic is not valid.
+
+        :param topic: the topic to validate
+        :type topic: str
+        """
+        if "#" in topic or "+" in topic:
+            raise InvalidTopicError(
+                "publishing to wildcard topics ('#' or '+') is not allowed")
 
     def process_handlers_for_topic(self, topic: str, payload: any):
         """

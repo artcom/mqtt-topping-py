@@ -39,6 +39,7 @@ def test_is_event_or_command(test_topping):
 
 
 def test_validate_topic(test_topping):
+    test_topping.validate_topic("/")
     test_topping.validate_topic("test/0/test")
 
     test_topping.validate_topic("#")
@@ -79,6 +80,16 @@ def test_validate_topic(test_topping):
 
     with pytest.raises(InvalidTopicError):
         test_topping.validate_topic("/#")
+
+
+def test_validate_topic_for_publish(test_topping):
+    test_topping.validate_topic_for_publish("test/0/test")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic_for_publish("test/0/#")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic_for_publish("test/+/test")
 
 
 def test_match_topic_with_wildcard_hash(test_topping):
