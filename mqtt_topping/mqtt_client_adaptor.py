@@ -1,7 +1,7 @@
 import weakref
 
 
-class MqttClientAdaptor(object):
+class MqttClientAdaptor:
 
     def __init__(self):
         """

@@ -3,7 +3,7 @@ import json
 from mqtt_topping.subscription_handler import SubscriptionHandler
 from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
 from mqtt_topping.paho_client_adaptor import PahoClientAdaptor
-from mqtt_topping.invalidTopicError import InvalidTopicError
+from mqtt_topping.invalid_topic_error import InvalidTopicError
 
 
 class MqttTopping:
