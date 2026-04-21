@@ -14,10 +14,14 @@ class PahoClientAdaptor(MqttClientAdaptor):
         :param client: Paho mqttclient instance
         """
         super(PahoClientAdaptor, self).__init__()
-        self.client = paho.Client(paho.CallbackAPIVersion.VERSION2)
+        self.client = None
         self.mqtt_thread = None
 
-    def connect(self, host, port):
+    def connect(self, host, port, client_id: str):
+        self.client = paho.Client(
+            paho.CallbackAPIVersion.VERSION2,
+            client_id=client_id
+        )
 
         def on_message(_, topic, msg):
             self.on_message(topic, msg)

@@ -25,7 +25,7 @@ def test_paho(paho_topping, callbacks):
     def callback_1(_, __):
         callbacks.append([1, topic, payload])
 
-    paho_topping.connect("127.0.0.1", 1883)
+    paho_topping.connect("127.0.0.1", 1883, "test_client_123")
     paho_topping.subscribe(topic, callback_1)
 
     assert topic in paho_topping.subscriptions

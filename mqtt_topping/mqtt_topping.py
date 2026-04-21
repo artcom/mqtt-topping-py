@@ -22,7 +22,7 @@ class MqttTopping:
         self.client_adaptor.set_mqtt_topping(self)
         self.subscriptions = {}
 
-    def connect(self, host: str, port: int):
+    def connect(self, host: str, port: int, client_id: str = None):
         """
         Connect to an mqtt server.
 
@@ -30,8 +30,10 @@ class MqttTopping:
         :type host: str
         :param port: Port of the mqtt server
         :type port: int
+        :param client_id: Client id
+        :type client_id: str
         """
-        self.client_adaptor.connect(host, port)
+        self.client_adaptor.connect(host, port, client_id)
 
     def disconnect(self):
         """

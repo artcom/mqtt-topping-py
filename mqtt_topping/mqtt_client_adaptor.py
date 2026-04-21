@@ -10,7 +10,7 @@ class MqttClientAdaptor:
         self.client = None
         self._mqtt_topping = None
 
-    def connect(self, host: str, port: int):
+    def connect(self, host: str, port: int, client_id: str):
         """
         Connect to an mqtt server
 
@@ -18,6 +18,8 @@ class MqttClientAdaptor:
         :type host: str
         :param port: Port of the mqtt server
         :type port: int
+        :param client_id: Client id
+        :type client_id: str
         """
         return
 
