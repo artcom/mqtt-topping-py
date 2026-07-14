@@ -20,18 +20,21 @@ def test_paho(paho_topping, callbacks):
 
     topic = "test/0/test"
     payload = "hello"
-    json_payload = json.dumps(payload).encode()
+    message = {
+        'topic': topic,
+        'payload': payload
+    }
+    json_message = json.dumps(message).encode()
 
     def callback_1(_, __):
         callbacks.append([1, topic, payload])
 
     paho_topping.connect("127.0.0.1", 1883, "test_client_123")
-    paho_topping.subscribe(topic, callback_1)
 
+    paho_topping.subscribe(topic, callback_1)
     assert topic in paho_topping.subscriptions
 
-    paho_topping.on_message(topic, json_payload)
-
+    paho_topping.on_message(topic, json_message)
     assert callbacks[0][0] == 1
     assert callbacks[0][1] == topic
     assert callbacks[0][2] == payload

@@ -23,8 +23,8 @@ class PahoClientAdaptor(MqttClientAdaptor):
             client_id=client_id
         )
 
-        def on_message(_, topic, msg):
-            self.on_message(topic, msg)
+        def on_message(_, __, msg):
+            self.on_message(msg.topic, msg.payload)
 
         def run_mqtt():
             self.client.on_connect = on_connect
@@ -32,13 +32,13 @@ class PahoClientAdaptor(MqttClientAdaptor):
             self.client.on_disconnect = on_disconnect
             self.client.on_message = on_message
             self.client.connect(host, port)
-            self.client.loop_start()
+            self.client.loop_forever()
 
         self.mqtt_thread = threading.Thread(target=run_mqtt)
         self.mqtt_thread.start()
 
     def disconnect(self):
-        self.client.loop_stop()
+        self.client.disconnect()
         self.mqtt_thread.join()
 
     def subscribe(self, topic: str, qos: int = 2):
