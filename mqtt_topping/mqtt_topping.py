@@ -22,7 +22,7 @@ class MqttTopping:
         self.client_adaptor.set_mqtt_topping(self)
         self.subscriptions = {}
 
-    def connect(self, host: str, port: int, client_id: str = None):
+    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
         """
         Connect to an mqtt server.
 
@@ -32,8 +32,15 @@ class MqttTopping:
         :type port: int
         :param client_id: Client id
         :type client_id: str
+        :param on_connect: callback for successful connection
+        :type on_connect: any
+        :param on_connect_fail: callback for failed connection
+        :type on_connect_fail: any
+        :param on_disconnect: callback for disconnect
+        :type on_disconnect: any
         """
-        self.client_adaptor.connect(host, port, client_id)
+        self.client_adaptor.connect(
+            host, port, client_id, on_connect=on_connect)
 
     def disconnect(self):
         """

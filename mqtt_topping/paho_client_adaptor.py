@@ -17,7 +17,7 @@ class PahoClientAdaptor(MqttClientAdaptor):
         self.client = None
         self.mqtt_thread = None
 
-    def connect(self, host, port, client_id: str):
+    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
         self.client = paho.Client(
             paho.CallbackAPIVersion.VERSION2,
             client_id=client_id
@@ -27,6 +27,9 @@ class PahoClientAdaptor(MqttClientAdaptor):
             self.on_message(topic, msg)
 
         def run_mqtt():
+            self.client.on_connect = on_connect
+            self.client.on_connect_fail = on_connect_fail
+            self.client.on_disconnect = on_disconnect
             self.client.on_message = on_message
             self.client.connect(host, port)
             self.client.loop_start()

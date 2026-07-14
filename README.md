@@ -21,7 +21,13 @@ Create an instance of the mqtt topping with a default paho mqtt-client:
 from mqtt_topping import MqttTopping
 
 mqtt_topping = MqttTopping()
-mqtt_topping.connect("127.0.0.1", 1883)
+mqtt_topping.connect(
+    "127.0.0.1",
+    1883,
+    on_connect=cb_on_connect,
+    on_connect_fail=cb_on_connect_fail,
+    on_disconnect=cb_on_disconnect
+)
 ```
 
 Create an instance of the mqtt topping with a TouchDesigner mqtt-client:
