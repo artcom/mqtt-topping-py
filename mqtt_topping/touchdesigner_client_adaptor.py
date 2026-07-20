@@ -12,7 +12,7 @@ class TouchDesignerClientAdaptor(MqttClientAdaptor):
         super(TouchDesignerClientAdaptor, self).__init__()
         self.client = client
 
-    def connect(self, host: str, port: int, client_id: str, on_connect: any = None):
+    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
         self.client.par.active = True
         self.client.par.reconnect.pulse()
 
