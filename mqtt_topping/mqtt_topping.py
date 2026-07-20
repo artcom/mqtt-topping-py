@@ -40,7 +40,7 @@ class MqttTopping:
         :type on_disconnect: any
         """
         self.client_adaptor.connect(
-            host, port, client_id, on_connect=on_connect)
+            host, port, client_id, on_connect=on_connect, on_connect_fail=on_connect_fail, on_disconnect=on_disconnect)
 
     def disconnect(self):
         """
