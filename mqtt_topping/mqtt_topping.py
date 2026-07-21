@@ -134,7 +134,7 @@ class MqttTopping:
         del self.subscriptions[topic]
         self.client_adaptor.unsubscribe(topic)
 
-    def publish(self, topic: str, payload: any):
+    def publish(self, topic: str, payload: any, encode: bool = True):
         """
         Publish a message with a payload to a specific topic.
         Throws an InvalidTopicError when the topic is not valid.
@@ -143,10 +143,13 @@ class MqttTopping:
         :type topic: str
         :param payload: the payload to publish
         :type payload: any
+        :param encode: True of the payload should encoded in json
+        :type encode: bool
         """
         self.validate_topic_for_publish(topic)
         retain = not self.is_event_or_command(topic)
-        payload = json.dumps(payload).encode()
+        if encode is True:
+            payload = json.dumps(payload).encode()
         self.client_adaptor.publish(topic, payload, qos=2, retain=retain)
 
     def is_event_or_command(self, topic: str) -> bool:
