@@ -83,7 +83,7 @@ Unsubscribe all callbacks from a topic:
 mqtt_topping.force_unsubscribe("test/topic/doTest")
 ```
 
-Publish a message:
+Publish a message as json:
 
 ```py
 payload = {
@@ -91,6 +91,13 @@ payload = {
     "name": "bob"
 }
 mqtt_topping.publish("test/topic/doTest", payload)
+```
+
+Publish a message as binary buffer:
+
+```py
+payload = b"abcde"
+mqtt_topping.publish("test/topic/doTest", payload, encode=False)
 ```
 
 ## Development
