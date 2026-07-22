@@ -20,7 +20,8 @@ class PahoClientAdaptor(MqttClientAdaptor):
     def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
         self.client = paho.Client(
             paho.CallbackAPIVersion.VERSION2,
-            client_id=client_id
+            client_id=client_id,
+            clean_session=True
         )
 
         def on_message(_, __, msg):
