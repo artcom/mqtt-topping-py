@@ -91,6 +91,33 @@ def test_validate_topic_for_publish(test_topping):
     with pytest.raises(InvalidTopicError):
         test_topping.validate_topic_for_publish("test/+/test")
 
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("/test/test")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("test/test/")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("//test/test")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("test//test")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("test/test//")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("#/")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("#/test")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("/#")
+
 
 def test_match_topic_with_wildcard_hash(test_topping):
     topic = "test/hash/#"

@@ -216,7 +216,7 @@ class MqttTopping:
         if len(topic) == 0:
             raise InvalidTopicError("topic must be a non-empty string")
 
-        if "#" in topic and topic[-1] != "#" and topic != "#":
+        if "#" in topic and topic[-1] != "#" and topic[-2] != "/" and topic != "#":
             raise InvalidTopicError(
                 "wildcard '#' must occupy an entire level and be the last character (e.g., 'foo/#' or '#')")
 
@@ -238,6 +238,7 @@ class MqttTopping:
         :param topic: the topic to validate
         :type topic: str
         """
+        self.validate_topic(topic)
         if "#" in topic or "+" in topic:
             raise InvalidTopicError(
                 "publishing to wildcard topics ('#' or '+') is not allowed")
