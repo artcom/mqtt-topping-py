@@ -1,4 +1,5 @@
 from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
+from mqtt_topping.security_config import SecurityConfig
 
 
 class TouchDesignerClientAdaptor(MqttClientAdaptor):
@@ -12,7 +13,7 @@ class TouchDesignerClientAdaptor(MqttClientAdaptor):
         super(TouchDesignerClientAdaptor, self).__init__()
         self.client = client
 
-    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
+    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None, security_config: SecurityConfig = None):
         self.client.par.active = True
         self.client.par.reconnect.pulse()
 

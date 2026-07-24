@@ -1,5 +1,6 @@
 import json
 
+from mqtt_topping.security_config import SecurityConfig
 from mqtt_topping.subscription_handler import SubscriptionHandler
 from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
 from mqtt_topping.paho_client_adaptor import PahoClientAdaptor
@@ -22,7 +23,7 @@ class MqttTopping:
         self.client_adaptor.set_mqtt_topping(self)
         self.subscriptions = {}
 
-    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
+    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None, security_config: SecurityConfig = None):
         """
         Connect to an mqtt server.
 
@@ -38,9 +39,11 @@ class MqttTopping:
         :type on_connect_fail: any
         :param on_disconnect: callback for disconnect
         :type on_disconnect: any
+        :param security_config: configuration for login and encryption
+        :type security_config: SecurityConfig
         """
         self.client_adaptor.connect(
-            host, port, client_id, on_connect=on_connect, on_connect_fail=on_connect_fail, on_disconnect=on_disconnect)
+            host, port, client_id, on_connect=on_connect, on_connect_fail=on_connect_fail, on_disconnect=on_disconnect, security_config=security_config)
 
     def disconnect(self):
         """

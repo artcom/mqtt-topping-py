@@ -3,6 +3,7 @@ import paho.mqtt.client as paho
 
 
 from mqtt_topping.mqtt_client_adaptor import MqttClientAdaptor
+from mqtt_topping.security_config import SecurityConfig
 
 
 class PahoClientAdaptor(MqttClientAdaptor):
@@ -17,12 +18,18 @@ class PahoClientAdaptor(MqttClientAdaptor):
         self.client = None
         self.mqtt_thread = None
 
-    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
+    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None, security_config: SecurityConfig = None):
         self.client = paho.Client(
             paho.CallbackAPIVersion.VERSION2,
             client_id=client_id,
-            clean_session=True
+            clean_session=True,
         )
+        if security_config:
+            self.client.tls_set(certfile=security_config.certfile,
+                                keyfile=security_config.keyfile,
+                                cert_reqs=security_config.cert_reqs)
+            self.client.username_pw_set(username=security_config.username,
+                                        password=security_config.password)
 
         def on_message(_, __, msg):
             self.on_message(msg.topic, msg.payload)

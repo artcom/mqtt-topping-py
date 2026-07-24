@@ -1,5 +1,7 @@
 import weakref
 
+from mqtt_topping.security_config import SecurityConfig
+
 
 class MqttClientAdaptor:
 
@@ -10,7 +12,7 @@ class MqttClientAdaptor:
         self.client = None
         self._mqtt_topping = None
 
-    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None):
+    def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None, security_config: SecurityConfig = None):
         """
         Connect to an mqtt server
 
@@ -26,6 +28,8 @@ class MqttClientAdaptor:
         :type on_connect_fail: any
         :param on_disconnect: callback for disconnect
         :type on_disconnect: any
+        :param security_config: configuration for login and encryption
+        :type security_config: SecurityConfig
         """
         return
 
