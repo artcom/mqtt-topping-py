@@ -25,9 +25,10 @@ class PahoClientAdaptor(MqttClientAdaptor):
             clean_session=True,
         )
         if security_config:
-            self.client.tls_set(certfile=security_config.certfile,
-                                keyfile=security_config.keyfile,
-                                cert_reqs=security_config.cert_reqs)
+            if security_config.use_tls:
+                self.client.tls_set(certfile=security_config.certfile,
+                                    keyfile=security_config.keyfile,
+                                    cert_reqs=security_config.cert_reqs)
             self.client.username_pw_set(username=security_config.username,
                                         password=security_config.password)
 
