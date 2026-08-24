@@ -20,6 +20,7 @@ class PahoClientAdaptor(MqttClientAdaptor):
         self._should_terminate = False
 
     def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None, security_config: SecurityConfig = None):
+        self._should_terminate = False
         self.client = paho.Client(
             paho.CallbackAPIVersion.VERSION2,
             client_id=client_id,
