@@ -26,10 +26,18 @@ def test_paho(paho_topping, callbacks):
     }
     json_message = json.dumps(message).encode()
 
+    def on_disconnect(_, __, ___, ____, _____):
+        pass
+
     def callback_1(_, __):
         callbacks.append([1, topic, payload])
 
-    paho_topping.connect("127.0.0.1", 1883, "test_client_123")
+    paho_topping.connect(
+        "127.0.0.1",
+        1883,
+        "test_client_123",
+        on_disconnect=on_disconnect
+    )
 
     paho_topping.subscribe(topic, callback_1)
     assert topic in paho_topping.subscriptions
