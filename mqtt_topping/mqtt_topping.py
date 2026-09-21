@@ -1,4 +1,6 @@
 import json
+from json import JSONDecodeError
+import logging
 
 from mqtt_topping.security_config import SecurityConfig
 from mqtt_topping.subscription_handler import SubscriptionHandler
@@ -262,8 +264,11 @@ class MqttTopping:
             return
         for handler in self.subscriptions[subscription_topic]['handlers']:
             if handler.parse and len(payload):
-                payload_parsed = json.loads(payload.decode())
-                handler.callback(topic, payload_parsed)
+                try:
+                    payload_parsed = json.loads(payload.decode())
+                    handler.callback(topic, payload_parsed)
+                except JSONDecodeError as e:
+                    logging.error(e)
             else:
                 handler.callback(topic, payload)
 
