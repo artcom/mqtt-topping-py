@@ -139,7 +139,7 @@ class MqttTopping:
         del self.subscriptions[topic]
         self.client_adaptor.unsubscribe(topic)
 
-    def publish(self, topic: str, payload: any, qos=2, encode: bool = True):
+    def publish(self, topic: str, payload: any, qos: int = 2, encode: bool = True):
         """
         Publish a message with a payload to a specific topic.
         Throws an InvalidTopicError when the topic is not valid.
