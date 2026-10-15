@@ -20,6 +20,9 @@ class TouchDesignerClientAdaptor(MqttClientAdaptor):
     def disconnect(self):
         self.client.par.active = False
 
+    def is_connected(self) -> bool:
+        return bool(self.client.par.active)
+
     def subscribe(self, topic: str, qos: int = 2):
         self.client.subscribe(topic, qos=qos)
 

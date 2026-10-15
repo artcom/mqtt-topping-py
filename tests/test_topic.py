@@ -81,6 +81,15 @@ def test_validate_topic(test_topping):
     with pytest.raises(InvalidTopicError):
         test_topping.validate_topic("/#")
 
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("foo#")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("a/#/b")
+
+    with pytest.raises(InvalidTopicError):
+        test_topping.validate_topic("test/\u0000/test")
+
 
 def test_validate_topic_for_publish(test_topping):
     test_topping.validate_topic_for_publish("test/0/test")

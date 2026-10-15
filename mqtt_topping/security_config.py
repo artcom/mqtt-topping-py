@@ -3,7 +3,7 @@ import ssl
 
 class SecurityConfig:
 
-    def __init__(self, username: str, password: str, use_tls: bool = False, certfile: str = None, keyfile: str = None, cert_reqs: ssl.VerifyMode = ssl.CERT_NONE):
+    def __init__(self, username: str = None, password: str = None, use_tls: bool = False, certfile: str = None, keyfile: str = None, cert_reqs: ssl.VerifyMode = ssl.CERT_NONE):
         self.username = username
         self.password = password
         self.use_tls = use_tls

@@ -11,12 +11,16 @@ from mqtt_topping.invalid_topic_error import InvalidTopicError
 
 class MqttTopping:
 
-    def __init__(self, client_adaptor: MqttClientAdaptor = None):
+    def __init__(self, client_adaptor: MqttClientAdaptor = None, on_callback_error: any = None, on_parse_error: any = None):
         """
         Creates an MqttTopping object.
 
         :param client_adaptor: the client adaptor to use. Defaults to paho.
         :type client_adaptor: MqttClientAdaptor
+        :param on_callback_error: optional hook invoked when a subscription callback raises an exception
+        :type on_callback_error: any
+        :param on_parse_error: optional hook invoked when a received payload fails to parse as JSON
+        :type on_parse_error: any
         """
         if client_adaptor is None:
             client_adaptor = PahoClientAdaptor()
@@ -24,6 +28,8 @@ class MqttTopping:
         self.client_adaptor = client_adaptor
         self.client_adaptor.set_mqtt_topping(self)
         self.subscriptions = {}
+        self.on_callback_error = on_callback_error
+        self.on_parse_error = on_parse_error
 
     def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None, security_config: SecurityConfig = None):
         """
@@ -44,14 +50,31 @@ class MqttTopping:
         :param security_config: configuration for login and encryption
         :type security_config: SecurityConfig
         """
+        def _on_connect(*args, **kwargs):
+            # Re-subscribe to every registered topic on every (re)connect, since
+            # the broker may have dropped them (e.g. clean_session=True).
+            self.refresh_subscriptions()
+            if on_connect is not None:
+                on_connect(*args, **kwargs)
+
         self.client_adaptor.connect(
-            host, port, client_id, on_connect=on_connect, on_connect_fail=on_connect_fail, on_disconnect=on_disconnect, security_config=security_config)
+            host, port, client_id, on_connect=_on_connect, on_connect_fail=on_connect_fail, on_disconnect=on_disconnect, security_config=security_config)
+
+    def is_connected(self) -> bool:
+        """
+        Returns true if the client is currently connected to the broker.
+
+        :return: true, if connected
+        :rtype: bool
+        """
+        return self.client_adaptor.is_connected()
 
     def disconnect(self):
         """
         Disconnect from an mqtt server.
         """
         self.client_adaptor.disconnect()
+        self.subscriptions.clear()
 
     def subscribe(self, topic: str, callback: any, qos: int = 2, parse: bool = True):
         """
@@ -139,7 +162,7 @@ class MqttTopping:
         del self.subscriptions[topic]
         self.client_adaptor.unsubscribe(topic)
 
-    def publish(self, topic: str, payload: any, qos: int = 2, encode: bool = True):
+    def publish(self, topic: str, payload: any, encode: bool = True, qos: int = 2, retain: bool = None):
         """
         Publish a message with a payload to a specific topic.
         Throws an InvalidTopicError when the topic is not valid.
@@ -152,9 +175,14 @@ class MqttTopping:
         :type qos: int
         :param encode: True of the payload should encoded in json
         :type encode: bool
+        :param qos: the Quality of Service level
+        :type qos: int
+        :param retain: whether to retain the message. Defaults to the value derived from the topic name
+        :type retain: bool
         """
         self.validate_topic_for_publish(topic)
-        retain = not self.is_event_or_command(topic)
+        if retain is None:
+            retain = not self.is_event_or_command(topic)
         if encode is True:
             payload = json.dumps(payload).encode()
         self.client_adaptor.publish(topic, payload, qos=qos, retain=retain)
@@ -204,7 +232,7 @@ class MqttTopping:
         if topic in self.subscriptions:
             self.process_handlers_for_topic(topic, topic, payload)
 
-        for subscription_topic in self.subscriptions:
+        for subscription_topic in list(self.subscriptions):
             if "+" not in subscription_topic and "#" not in subscription_topic:
                 continue
 
@@ -223,7 +251,11 @@ class MqttTopping:
         if len(topic) == 0:
             raise InvalidTopicError("topic must be a non-empty string")
 
-        if "#" in topic and topic[-1] != "#" and topic[-2] != "/" and topic != "#":
+        if "\u0000" in topic:
+            raise InvalidTopicError(
+                "topic must not contain the null character")
+
+        if "#" in topic and not topic.endswith("/#") and topic != "#":
             raise InvalidTopicError(
                 "wildcard '#' must occupy an entire level and be the last character (e.g., 'foo/#' or '#')")
 
@@ -264,15 +296,51 @@ class MqttTopping:
 
         if subscription_topic not in self.subscriptions:
             return
-        for handler in self.subscriptions[subscription_topic]['handlers']:
-            if handler.parse and len(payload):
+        for handler in list(self.subscriptions[subscription_topic]['handlers']):
+            if handler.parse:
+                if len(payload) == 0:
+                    self._invoke_callback(handler, topic, None)
+                    continue
                 try:
                     payload_parsed = json.loads(payload.decode())
-                    handler.callback(topic, payload_parsed)
                 except JSONDecodeError as e:
                     logging.error(e)
+                    self._invoke_hook(self.on_parse_error, topic, payload, e)
+                    continue
+                self._invoke_callback(handler, topic, payload_parsed)
             else:
-                handler.callback(topic, payload)
+                self._invoke_callback(handler, topic, payload)
+
+    def _invoke_callback(self, handler: SubscriptionHandler, topic: str, payload: any):
+        """
+        Invokes a subscription handler's callback, isolating the caller from any exception it raises.
+
+        :param handler: the subscription handler to invoke
+        :type handler: SubscriptionHandler
+        :param topic: the topic the message was received under
+        :type topic: str
+        :param payload: the payload to pass to the callback
+        :type payload: any
+        """
+        try:
+            handler.callback(topic, payload)
+        except Exception as e:
+            logging.exception(e)
+            self._invoke_hook(self.on_callback_error, topic, payload, e)
+
+    def _invoke_hook(self, hook: any, *args):
+        """
+        Invokes an optional error hook, isolating the caller from any exception it raises.
+
+        :param hook: the hook to invoke, if set
+        :type hook: any
+        """
+        if hook is None:
+            return
+        try:
+            hook(*args)
+        except Exception:
+            logging.exception("error hook raised an exception")
 
     def match_topic(self, topic: str, subscription: str) -> bool:
         """

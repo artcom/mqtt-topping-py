@@ -1,3 +1,4 @@
+import logging
 import threading
 import paho.mqtt.client as paho
 
@@ -29,29 +30,43 @@ class PahoClientAdaptor(MqttClientAdaptor):
                 self.client.tls_set(certfile=security_config.certfile,
                                     keyfile=security_config.keyfile,
                                     cert_reqs=security_config.cert_reqs)
-            self.client.username_pw_set(username=security_config.username,
-                                        password=security_config.password)
+            if security_config.username is not None:
+                self.client.username_pw_set(username=security_config.username,
+                                            password=security_config.password)
 
         def on_message(_, __, msg):
             self.on_message(msg.topic, msg.payload)
 
         def _on_disconnect(one, two, three, four, rc):
-            on_disconnect(one, two, three, four, rc)
+            if on_disconnect is not None:
+                on_disconnect(one, two, three, four, rc)
+
+        self.client.on_connect = on_connect
+        self.client.on_connect_fail = on_connect_fail
+        self.client.on_disconnect = _on_disconnect
+        self.client.on_message = on_message
+
+        # Connect synchronously so a failure (e.g. broker unreachable) is
+        # raised to the caller instead of silently killing a background thread.
+        self.client.connect(host, port)
 
         def run_mqtt():
-            self.client.on_connect = on_connect
-            self.client.on_connect_fail = on_connect_fail
-            self.client.on_disconnect = _on_disconnect
-            self.client.on_message = on_message
-            self.client.connect(host, port)
             self.client.loop_forever()
 
         self.mqtt_thread = threading.Thread(target=run_mqtt)
         self.mqtt_thread.start()
 
     def disconnect(self):
+        if self.client is None:
+            return
         self.client.disconnect()
-        self.mqtt_thread.join()
+        if self.mqtt_thread is not None and threading.current_thread() is not self.mqtt_thread:
+            self.mqtt_thread.join()
+
+    def is_connected(self) -> bool:
+        if self.client is None:
+            return False
+        return self.client.is_connected()
 
     def subscribe(self, topic: str, qos: int = 2):
         self.client.subscribe(topic, qos=qos)
@@ -60,4 +75,13 @@ class PahoClientAdaptor(MqttClientAdaptor):
         self.client.unsubscribe(topic)
 
     def publish(self, topic: str, payload: any, qos: int = 2, retain: bool = True):
-        self.client.publish(topic, payload, qos=qos, retain=retain)
+        if self.client is None:
+            logging.warning(
+                "cannot publish to '%s': not connected", topic)
+            return None
+
+        message_info = self.client.publish(topic, payload, qos=qos, retain=retain)
+        if message_info.rc != paho.MQTT_ERR_SUCCESS:
+            logging.warning("publish to '%s' failed: %s",
+                            topic, paho.error_string(message_info.rc))
+        return message_info

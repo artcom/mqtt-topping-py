@@ -39,6 +39,15 @@ class MqttClientAdaptor:
         """
         return
 
+    def is_connected(self) -> bool:
+        """
+        Returns true if the client is currently connected to the broker
+
+        :return: true, if connected
+        :rtype: bool
+        """
+        return False
+
     def set_mqtt_topping(self, mqtt_topping):
         """
         Sets a weak reference to the parent MqttTopping object

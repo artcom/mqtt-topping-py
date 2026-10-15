@@ -272,6 +272,133 @@ def test_messages_with_wildcard_hash(test_topping, payload, json_payload, callba
     assert len(callbacks) == 2
 
 
+def test_messages_empty_payload_parsed_as_none(test_topping, callbacks):
+    topic = "test/0/test"
+
+    def callback(topic, payload):
+        callbacks.append([topic, payload])
+
+    test_topping.subscribe(topic, callback)
+    test_topping.client_adaptor.on_message(topic, b'')
+
+    assert callbacks[0][0] == topic
+    assert callbacks[0][1] is None
+
+
+def test_messages_empty_payload_unparsed_stays_raw(test_topping, callbacks):
+    topic = "test/0/test"
+
+    def callback(topic, payload):
+        callbacks.append([topic, payload])
+
+    test_topping.subscribe(topic, callback, parse=False)
+    test_topping.client_adaptor.on_message(topic, b'')
+
+    assert callbacks[0][0] == topic
+    assert callbacks[0][1] == b''
+
+
+def test_callback_exception_does_not_stop_other_handlers_or_later_messages(test_topping, json_payload, callbacks):
+    topic = "test/0/test"
+
+    def failing_callback(_, __):
+        raise ValueError("boom")
+
+    def callback(topic, payload):
+        callbacks.append([topic, payload])
+
+    test_topping.subscribe(topic, failing_callback)
+    test_topping.subscribe(topic, callback)
+
+    test_topping.client_adaptor.on_message(topic, json_payload)
+    assert len(callbacks) == 1
+
+    test_topping.client_adaptor.on_message(topic, json_payload)
+    assert len(callbacks) == 2
+
+
+def test_callback_exception_invokes_on_callback_error_hook():
+    errors = []
+
+    def on_callback_error(topic, payload, error):
+        errors.append((topic, payload, error))
+
+    test_topping = MqttTopping(ClientAdaptor(), on_callback_error=on_callback_error)
+    topic = "test/0/test"
+
+    def failing_callback(_, __):
+        raise ValueError("boom")
+
+    test_topping.subscribe(topic, failing_callback)
+    test_topping.client_adaptor.on_message(topic, json.dumps("hello").encode())
+
+    assert len(errors) == 1
+    assert errors[0][0] == topic
+    assert isinstance(errors[0][2], ValueError)
+
+
+def test_parse_error_invokes_on_parse_error_hook():
+    errors = []
+
+    def on_parse_error(topic, payload, error):
+        errors.append((topic, payload, error))
+
+    test_topping = MqttTopping(ClientAdaptor(), on_parse_error=on_parse_error)
+    topic = "test/0/test"
+
+    def callback(_, __):
+        pass
+
+    test_topping.subscribe(topic, callback)
+    test_topping.client_adaptor.on_message(topic, b"not json")
+
+    assert len(errors) == 1
+    assert errors[0][0] == topic
+
+
+def test_disconnect_clears_subscriptions(test_topping):
+    topic = "test/0/test"
+
+    def callback(_, __):
+        return
+
+    test_topping.subscribe(topic, callback)
+    assert topic in test_topping.subscriptions
+
+    test_topping.disconnect()
+    assert test_topping.subscriptions == {}
+
+
+def test_is_connected_delegates_to_adaptor(test_topping):
+    assert test_topping.is_connected() is False
+    test_topping.connect("127.0.0.1", 1883, "test_client")
+    assert test_topping.is_connected() is True
+    test_topping.disconnect()
+    assert test_topping.is_connected() is False
+
+
+def test_reconnect_resubscribes_all_topics():
+    adaptor = ClientAdaptor()
+    test_topping = MqttTopping(adaptor)
+
+    topics = ["test/1/test", "test/2/test", "test/3/test", "test/4/test"]
+
+    def callback(_, __):
+        return
+
+    def on_connect(*args, **kwargs):
+        for topic in topics:
+            test_topping.subscribe(topic, callback)
+
+    test_topping.connect("127.0.0.1", 1883, "test_client", on_connect=on_connect)
+
+    adaptor.on_connect()
+    assert adaptor.performed_commands.count('subscribe') == 4
+
+    adaptor.on_connect()
+    assert adaptor.performed_commands.count('subscribe') == 8
+
+
 def test_messages_with_wildcard_plus(test_topping, payload, json_payload, callbacks):
     topic_plus = "test/+/test"
     topic0 = "test/0/test"
