@@ -14,6 +14,15 @@ class TouchDesignerClientAdaptor(MqttClientAdaptor):
         self.client = client
 
     def connect(self, host: str, port: int, client_id: str, on_connect: any = None, on_connect_fail: any = None, on_disconnect: any = None, security_config: SecurityConfig = None):
+        """
+        Activates the TouchDesigner mqttclient DAT.
+
+        Note: unlike other adaptors, host, port, client_id, the on_connect/on_connect_fail/
+        on_disconnect callbacks and security_config are not used here. The mqttclient DAT is
+        configured exclusively through its own TouchDesigner parameters (broker address,
+        client id, username/password, TLS); connection lifecycle callbacks are delivered via
+        the DAT's own callback DAT rather than through the arguments passed to this method.
+        """
         self.client.par.active = True
         self.client.par.reconnect.pulse()
 
