@@ -53,7 +53,10 @@ class PahoClientAdaptor(MqttClientAdaptor):
         def run_mqtt():
             self.client.loop_forever()
 
-        self.mqtt_thread = threading.Thread(target=run_mqtt)
+        # Daemon: a caller that forgets to call disconnect() on shutdown
+        # (or exits via an unhandled path) must not hang the process on
+        # this thread's infinite loop_forever().
+        self.mqtt_thread = threading.Thread(target=run_mqtt, daemon=True)
         self.mqtt_thread.start()
 
     def disconnect(self):

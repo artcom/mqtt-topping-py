@@ -125,3 +125,12 @@ def test_security_config_allows_missing_username():
     time.sleep(0.5)
     assert topping.is_connected() is True
     topping.disconnect()
+
+
+def test_mqtt_thread_is_a_daemon_thread(paho_topping):
+    # A caller that forgets to call disconnect() on shutdown (or an unhandled
+    # exit path) must not hang the process on this thread's loop_forever().
+    paho_topping.connect("127.0.0.1", 1883, "test_client_daemon_thread")
+    time.sleep(0.5)
+    assert paho_topping.client_adaptor.mqtt_thread.daemon is True
+    paho_topping.disconnect()
